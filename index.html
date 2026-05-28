@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paasa — Investor Data Room</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #1a1a1a;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #ffffff;
+    --text2: rgba(255,255,255,0.55);
+    --text3: rgba(255,255,255,0.3);
+    --accent: #ffffff;
+    --green: #4ade80;
+    --green-bg: rgba(74,222,128,0.08);
+    --amber: #fbbf24;
+    --red: #f87171;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-cube {
+    width: 28px;
+    height: 28px;
+  }
+
+  .logo-text {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .header-right {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Layout */
+  .layout {
+    display: flex;
+    min-height: calc(100vh - 65px);
+  }
+
+  /* Sidebar nav */
+  .sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 65px;
+    height: calc(100vh - 65px);
+    overflow-y: auto;
+  }
+
+  .nav-section {
+    padding: 0 20px;
+    margin-bottom: 8px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 8px 20px;
+    font-size: 13px;
+    color: var(--text2);
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-item:hover { color: var(--text); background: var(--bg2); }
+  .nav-item.active { color: var(--text); border-left-color: var(--text); background: var(--bg2); }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+    max-width: 1000px;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .section-title {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  .section-sub {
+    font-size: 13px;
+    color: var(--text3);
+    margin-bottom: 32px;
+  }
+
+  /* Metric cards */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .metric {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .metric-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .metric-sub {
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+
+  .card-insight {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .card-insight span { color: var(--green); }
+
+  /* Charts */
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg3); }
+
+  .td-num { text-align: right; font-family: 'DM Mono', monospace; font-size: 11px; }
+
+  /* Cohort cells */
+  .c-green { background: rgba(74,222,128,0.12); color: #4ade80; border-radius: 3px; }
+  .c-amber { background: rgba(251,191,36,0.12); color: #fbbf24; border-radius: 3px; }
+  .c-red { background: rgba(248,113,113,0.12); color: #f87171; border-radius: 3px; }
+  .c-na { color: var(--text3); }
+  .c-above { background: rgba(74,222,128,0.2); color: #86efac; border-radius: 3px; }
+
+  /* ICP grid */
+  .icp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .icp-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .icp-name { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .icp-aum { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 2px; }
+  .icp-meta { font-size: 12px; color: var(--text3); }
+  .icp-bar { height: 2px; background: var(--border); border-radius: 1px; margin-top: 14px; overflow: hidden; }
+  .icp-bar-fill { height: 100%; background: white; border-radius: 1px; }
+
+  /* Funnel */
+  .funnel-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .funnel-label { font-size: 12px; color: var(--text2); width: 200px; flex-shrink: 0; }
+  .funnel-track { flex: 1; background: var(--bg3); border-radius: 2px; height: 32px; overflow: hidden; }
+  .funnel-fill { height: 100%; background: white; display: flex; align-items: center; padding: 0 10px; font-size: 12px; color: #000; font-weight: 500; white-space: nowrap; transition: width 0.6s ease; }
+  .funnel-n { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; width: 55px; text-align: right; }
+
+  /* Legend */
+  .legend { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text3); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  /* Comparison */
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .neutral { color: var(--text3); }
+
+  /* Grid 2 */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { padding: 20px; }
+    .icp-grid, .grid2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <svg class="logo-cube" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="50,5 95,30 95,80 50,55" fill="white" opacity="0.9"/>
+      <polygon points="5,30 50,5 50,55 5,80" fill="white" opacity="0.7"/>
+      <polygon points="5,80 50,55 95,80 50,105" fill="white" opacity="0.5"/>
+      <polygon points="50,5 95,30 50,55 5,30" fill="white"/>
+    </svg>
+    <span class="logo-text">paasa</span>
+  </div>
+  <div class="header-right">Investor Data Room · May 2026</div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div style="margin-bottom:20px;">
+      <div class="nav-section">Overview</div>
+      <button class="nav-item active" onclick="show('overview',this)">Platform summary</button>
+      <button class="nav-item" onclick="show('funnel',this)">Onboarding funnel</button>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div class="nav-section">Growth</div>
+      <button class="nav-item" onclick="show('growth',this)">AUM & capital</button>
+      <button class="nav-item" onclick="show('concentration',this)">AUM concentration</button>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div class="nav-section">Retention</div>
+      <button class="nav-item" onclick="show('logo-ret',this)">Logo retention</button>
+      <button class="nav-item" onclick="show('value-ret',this)">AUM value retention</button>
+      <button class="nav-item" onclick="show('txn-ret',this)">Transaction retention</button>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div class="nav-section">Customers</div>
+      <button class="nav-item" onclick="show('icp',this)">ICP breakdown</button>
+      <button class="nav-item" onclick="show('behaviour',this)">Cohort behaviour</button>
+      <button class="nav-item" onclick="show('demographics',this)">Demographics</button>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- OVERVIEW -->
+    <div id="overview" class="section active">
+      <div class="section-title">Platform summary</div>
+      <div class="section-sub">As of May 2026 · All figures in USD</div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">Total AUM</div><div class="metric-value">$22.3M</div><div class="metric-sub">Holdings + cash</div></div>
+        <div class="metric"><div class="metric-label">Apex AUM</div><div class="metric-value">$6.5M</div><div class="metric-sub">27.8% of platform</div></div>
+        <div class="metric"><div class="metric-label">Active investors</div><div class="metric-value">1,060</div><div class="metric-sub">May 2026</div></div>
+        <div class="metric"><div class="metric-label">Funded accounts</div><div class="metric-value">1,329</div><div class="metric-sub">of 3,307 broker accounts</div></div>
+        <div class="metric"><div class="metric-label">Invested capital</div><div class="metric-value">$14.5M</div><div class="metric-sub">Cost basis, May 2026</div></div>
+        <div class="metric"><div class="metric-label">Unrealised gains</div><div class="metric-value">~$7.8M</div><div class="metric-sub">AUM vs cost basis</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Monthly depositing customers</div>
+        <div class="chart-wrap" style="height:200px;"><canvas id="depositingChart" role="img" aria-label="Depositing customers per month growing from 3 in June 2025 to 1,014 in May 2026">Growing from 3 in June 2025 to 1,014 in May 2026.</canvas></div>
+        <div class="card-insight"><span>10x growth</span> in depositing customers from Jan 2026 to May 2026</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Deposit frequency — 1,305 funded customers</div>
+        <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div style="margin-bottom:10px;" id="depFreqBars"></div>
+          </div>
+          <div style="width:160px;height:160px;flex-shrink:0;"><canvas id="depositFreqChart" role="img" aria-label="Deposit frequency. 56.5% deposited once, 23.7% twice, 9% three times, 10.8% four or more.">56.5% once, 23.7% twice, 9% three times, 10.8% four or more.</canvas></div>
+        </div>
+        <div class="card-insight"><span>43.5%</span> of funded customers have deposited more than once</div>
+      </div>
+    </div>
+
+    <!-- FUNNEL -->
+    <div id="funnel" class="section">
+      <div class="section-title">Onboarding funnel</div>
+      <div class="section-sub">From signup to first deposit</div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">Total signups</div><div class="metric-value">5,803</div></div>
+        <div class="metric"><div class="metric-label">Broker accounts</div><div class="metric-value">3,307</div><div class="metric-sub">57% of signups</div></div>
+        <div class="metric"><div class="metric-label">Deposited</div><div class="metric-value">1,302</div><div class="metric-sub">39% of broker accounts</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Step-by-step funnel</div>
+        <div id="funnelViz" style="margin-top:8px;"></div>
+        <div class="card-insight">57% of signups complete broker account setup · <span>39%</span> of those go on to fund their account</div>
+      </div>
+    </div>
+
+    <!-- GROWTH -->
+    <div id="growth" class="section">
+      <div class="section-title">AUM & capital growth</div>
+      <div class="section-sub">Platform invested capital and active investor base over time</div>
+      <div class="card">
+        <div class="card-title">Monthly invested capital (cost basis, USD)</div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#fff;"></span>Invested capital</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#4ade80;"></span>Active investors</span>
+        </div>
+        <div class="chart-wrap" style="height:280px;"><canvas id="investedChart" role="img" aria-label="Monthly invested capital grew from $2.6M in Nov 2024 to $14.5M in May 2026">Capital grew from $2.6M to $14.5M. Investors grew from 21 to 1,060.</canvas></div>
+        <div class="card-insight"><span>5.6x</span> growth in invested capital · <span>50x</span> growth in active investors — Nov 2024 to May 2026</div>
+      </div>
+      <div class="card">
+        <div class="card-title">AUM split — Apex (advisory) vs Access (self-directed)</div>
+        <div class="grid2">
+          <div style="padding:20px;background:var(--bg3);border-radius:6px;border:1px solid var(--border);">
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Apex (advisory)</div>
+            <div style="font-size:28px;font-weight:500;letter-spacing:-0.02em;">$6.5M</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:4px;">27.8% of platform AUM</div>
+            <div style="height:2px;background:var(--border);margin-top:14px;border-radius:1px;overflow:hidden;"><div style="width:27.8%;height:100%;background:white;border-radius:1px;"></div></div>
+          </div>
+          <div style="padding:20px;background:var(--bg3);border-radius:6px;border:1px solid var(--border);">
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Access (self-directed)</div>
+            <div style="font-size:28px;font-weight:500;letter-spacing:-0.02em;">$16.9M</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:4px;">72.2% of platform AUM</div>
+            <div style="height:2px;background:var(--border);margin-top:14px;border-radius:1px;overflow:hidden;"><div style="width:72.2%;height:100%;background:rgba(255,255,255,0.4);border-radius:1px;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUM CONCENTRATION -->
+    <div id="concentration" class="section">
+      <div class="section-title">AUM concentration</div>
+      <div class="section-sub">Distribution of assets across the customer base</div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">Top 10% of accounts</div><div class="metric-value">83%</div><div class="metric-sub">of total AUM</div></div>
+        <div class="metric"><div class="metric-label">Top 20% of accounts</div><div class="metric-value">91%</div><div class="metric-sub">of total AUM</div></div>
+        <div class="metric"><div class="metric-label">Top decile min AUM</div><div class="metric-value">$21.5K</div><div class="metric-sub">per account</div></div>
+        <div class="metric"><div class="metric-label">Top account AUM</div><div class="metric-value">$1.24M</div><div class="metric-sub">largest single account</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">% of total AUM by customer decile</div>
+        <div class="chart-wrap" style="height:240px;"><canvas id="decileChart" role="img" aria-label="AUM concentration by decile. Top 10% holds 83% of AUM.">Top 10% holds 83%.</canvas></div>
+        <div class="card-insight">HNI accounts (<span>16 customers</span>) account for 39% of total platform AUM</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Decile breakdown</div>
+        <table>
+          <thead><tr><th>Decile</th><th>Customers</th><th style="text-align:right;">AUM (USD)</th><th style="text-align:right;">% of total</th><th style="text-align:right;">Min portfolio</th><th style="text-align:right;">Max portfolio</th></tr></thead>
+          <tbody>
+            <tr><td>Top 10%</td><td>133</td><td class="td-num">$18,508,223</td><td class="td-num">83.1%</td><td class="td-num">$21,476</td><td class="td-num">$1,242,870</td></tr>
+            <tr><td>10–20%</td><td>133</td><td class="td-num">$1,737,849</td><td class="td-num">7.8%</td><td class="td-num">$9,707</td><td class="td-num">$21,220</td></tr>
+            <tr><td>20–30%</td><td>133</td><td class="td-num">$885,891</td><td class="td-num">4.0%</td><td class="td-num">$5,035</td><td class="td-num">$9,700</td></tr>
+            <tr><td>30–40%</td><td>133</td><td class="td-num">$526,654</td><td class="td-num">2.4%</td><td class="td-num">$2,974</td><td class="td-num">$5,031</td></tr>
+            <tr><td>40–50%</td><td>133</td><td class="td-num">$287,104</td><td class="td-num">1.3%</td><td class="td-num">$1,602</td><td class="td-num">$2,960</td></tr>
+            <tr><td>50–60%</td><td>133</td><td class="td-num">$158,863</td><td class="td-num">0.7%</td><td class="td-num">$1,000</td><td class="td-num">$1,598</td></tr>
+            <tr><td>60–70%</td><td>133</td><td class="td-num">$100,430</td><td class="td-num">0.5%</td><td class="td-num">$513</td><td class="td-num">$1,000</td></tr>
+            <tr><td>70–80%</td><td>133</td><td class="td-num">$49,135</td><td class="td-num">0.2%</td><td class="td-num">$225</td><td class="td-num">$511</td></tr>
+            <tr><td>80–90%</td><td>133</td><td class="td-num">$20,357</td><td class="td-num">0.1%</td><td class="td-num">$100</td><td class="td-num">$220</td></tr>
+            <tr><td>Bottom 10%</td><td>132</td><td class="td-num">$11,539</td><td class="td-num">0.1%</td><td class="td-num">$0</td><td class="td-num">$100</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LOGO RETENTION -->
+    <div id="logo-ret" class="section">
+      <div class="section-title">AUM logo retention</div>
+      <div class="section-sub">% of accounts in each cohort still holding AUM in subsequent months</div>
+      <div class="card">
+        <div class="card-title">Retention by cohort month (M0–M6)</div>
+        <div style="overflow-x:auto;">
+          <table id="logoTable"></table>
+        </div>
+        <div class="card-insight">Cohorts from Jan 2026 onwards show <span>97–100%</span> logo retention through available months</div>
+      </div>
+    </div>
+
+    <!-- VALUE RETENTION -->
+    <div id="value-ret" class="section">
+      <div class="section-title">AUM value retention</div>
+      <div class="section-sub">AUM as % of baseline — values above 100% indicate capital growth on platform</div>
+      <div class="card">
+        <div class="card-title">AUM value vs baseline by cohort (M0–M6)</div>
+        <div style="overflow-x:auto;">
+          <table id="valueTable"></table>
+        </div>
+        <div class="card-insight">All cohorts show <span>growing AUM</span> — customers consistently add capital over time</div>
+      </div>
+    </div>
+
+    <!-- TXN RETENTION -->
+    <div id="txn-ret" class="section">
+      <div class="section-title">Transaction retention</div>
+      <div class="section-sub">% of users in each cohort who transacted again in subsequent months</div>
+      <div class="card">
+        <div class="card-title">% of users transacting by cohort (M0–M6)</div>
+        <div style="overflow-x:auto;">
+          <table id="txnTable"></table>
+        </div>
+        <div class="card-insight">Recent cohorts (Feb–Apr 2026) show <span>63–81%</span> M1 transaction retention</div>
+      </div>
+    </div>
+
+    <!-- ICP -->
+    <div id="icp" class="section">
+      <div class="section-title">ICP breakdown</div>
+      <div class="section-sub">Funded accounts and AUM by customer persona</div>
+      <div class="icp-grid">
+        <div class="icp-card">
+          <div class="icp-name">General retail</div>
+          <div class="icp-aum">$8.84M</div>
+          <div class="icp-meta">1,217 accounts · 39.7% of AUM</div>
+          <div class="icp-bar"><div class="icp-bar-fill" style="width:39.7%;opacity:0.5;"></div></div>
+        </div>
+        <div class="icp-card">
+          <div class="icp-name">HNI (&gt;$250K portfolio)</div>
+          <div class="icp-aum">$8.68M</div>
+          <div class="icp-meta">16 accounts · 39.0% of AUM</div>
+          <div class="icp-bar"><div class="icp-bar-fill" style="width:39%;"></div></div>
+        </div>
+        <div class="icp-card">
+          <div class="icp-name">RSU holders</div>
+          <div class="icp-aum">$3.93M</div>
+          <div class="icp-meta">83 accounts · 17.6% of AUM</div>
+          <div class="icp-bar"><div class="icp-bar-fill" style="width:17.6%;opacity:0.6;"></div></div>
+        </div>
+        <div class="icp-card">
+          <div class="icp-name">Returning Indian</div>
+          <div class="icp-aum">$0.84M</div>
+          <div class="icp-meta">13 accounts · 3.8% of AUM</div>
+          <div class="icp-bar"><div class="icp-bar-fill" style="width:3.8%;opacity:0.4;"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">AUM by ICP — the HNI concentration story</div>
+        <div class="chart-wrap" style="height:200px;"><canvas id="icpChart" role="img" aria-label="AUM by ICP. General retail and HNI each hold about 39% of AUM.">General Retail $8.84M, HNI $8.68M, RSU $3.93M, Returning Indian $0.84M.</canvas></div>
+        <div class="card-insight"><span>16 HNI accounts</span> hold the same AUM as 1,217 general retail accounts</div>
+      </div>
+    </div>
+
+    <!-- BEHAVIOUR -->
+    <div id="behaviour" class="section">
+      <div class="section-title">Cohort behaviour</div>
+      <div class="section-sub">Median transactions by type vs platform — how transferred-in cohorts engage differently</div>
+      <div class="card">
+        <div class="card-title">RSU holders vs platform median</div>
+        <table class="comparison-table">
+          <thead><tr><th>Transaction type</th><th style="text-align:right;">Platform median</th><th style="text-align:right;">RSU median</th><th style="text-align:right;">Difference</th></tr></thead>
+          <tbody>
+            <tr><td>Lumpsum</td><td class="td-num">3</td><td class="td-num">4</td><td class="td-num pos">+1</td></tr>
+            <tr><td>Portfolio buy</td><td class="td-num">2</td><td class="td-num">2.5</td><td class="td-num pos">+0.5</td></tr>
+            <tr><td>Deposit</td><td class="td-num">1</td><td class="td-num">2</td><td class="td-num pos">+1</td></tr>
+            <tr><td>Dividend</td><td class="td-num">3</td><td class="td-num">3</td><td class="td-num neutral">0</td></tr>
+            <tr><td>Sell</td><td class="td-num">2</td><td class="td-num">2</td><td class="td-num neutral">0</td></tr>
+            <tr><td>Withdraw</td><td class="td-num">1</td><td class="td-num">1</td><td class="td-num neutral">0</td></tr>
+          </tbody>
+        </table>
+        <div class="card-insight">RSU holders deposit <span>2x more frequently</span> and are more active buyers than the platform median</div>
+      </div>
+      <div class="card">
+        <div class="card-title">HNI vs platform median</div>
+        <table>
+          <thead><tr><th>Transaction type</th><th style="text-align:right;">Platform median</th><th style="text-align:right;">HNI median</th><th style="text-align:right;">Difference</th></tr></thead>
+          <tbody>
+            <tr><td>Lumpsum</td><td class="td-num">3</td><td class="td-num">30</td><td class="td-num pos">+27</td></tr>
+            <tr><td>Portfolio buy</td><td class="td-num">2</td><td class="td-num">4</td><td class="td-num pos">+2</td></tr>
+            <tr><td>Deposit</td><td class="td-num">1</td><td class="td-num">3</td><td class="td-num pos">+2</td></tr>
+            <tr><td>Dividend</td><td class="td-num">3</td><td class="td-num">4</td><td class="td-num pos">+1</td></tr>
+            <tr><td>Sell</td><td class="td-num">2</td><td class="td-num">2</td><td class="td-num neutral">0</td></tr>
+            <tr><td>Withdraw</td><td class="td-num">1</td><td class="td-num">1</td><td class="td-num neutral">0</td></tr>
+          </tbody>
+        </table>
+        <div class="card-insight">HNI customers do <span>10x more lumpsum transactions</span> — highly active, high-frequency investors</div>
+      </div>
+      <div class="card">
+        <div class="card-title">ACATS (full transfer) holders vs platform median</div>
+        <table>
+          <thead><tr><th>Transaction type</th><th style="text-align:right;">Platform median</th><th style="text-align:right;">ACATS median</th><th style="text-align:right;">Difference</th></tr></thead>
+          <tbody>
+            <tr><td>Lumpsum</td><td class="td-num">3</td><td class="td-num">6</td><td class="td-num pos">+3</td></tr>
+            <tr><td>Sell</td><td class="td-num">2</td><td class="td-num">5</td><td class="td-num pos">+3</td></tr>
+            <tr><td>Deposit</td><td class="td-num">1</td><td class="td-num">3</td><td class="td-num pos">+2</td></tr>
+            <tr><td>Dividend</td><td class="td-num">3</td><td class="td-num">3</td><td class="td-num neutral">0</td></tr>
+            <tr><td>Portfolio buy</td><td class="td-num">2</td><td class="td-num">1</td><td class="td-num neg">-1</td></tr>
+            <tr><td>Withdraw</td><td class="td-num">1</td><td class="td-num">1</td><td class="td-num neutral">0</td></tr>
+          </tbody>
+        </table>
+        <div class="card-insight">ACATS customers transfer full portfolios and remain <span>highly active</span> post-transfer</div>
+      </div>
+    </div>
+
+    <!-- DEMOGRAPHICS -->
+    <div id="demographics" class="section">
+      <div class="section-title">Demographics</div>
+      <div class="section-sub">AUM percentiles by age bracket and marital status</div>
+      <div class="card">
+        <div class="card-title">All customers — AUM distribution</div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Age</th><th>Status</th><th style="text-align:right;">Total</th><th style="text-align:right;">Funded</th><th style="text-align:right;">P50 AUM</th><th style="text-align:right;">P75 AUM</th><th style="text-align:right;">P90 AUM</th></tr></thead>
+            <tbody>
+              <tr><td>18–25</td><td>Single</td><td class="td-num">13</td><td class="td-num">6</td><td class="td-num">$0</td><td class="td-num">$13K</td><td class="td-num">$26K</td></tr>
+              <tr><td>25–30</td><td>Married</td><td class="td-num">5</td><td class="td-num">4</td><td class="td-num">$1.5K</td><td class="td-num">$27.8K</td><td class="td-num">$36.4K</td></tr>
+              <tr><td>25–30</td><td>Single</td><td class="td-num">8</td><td class="td-num">4</td><td class="td-num">$671</td><td class="td-num">$9.6K</td><td class="td-num">$24.8K</td></tr>
+              <tr><td>30–40</td><td>Married</td><td class="td-num">25</td><td class="td-num">11</td><td class="td-num">$0</td><td class="td-num">$11.9K</td><td class="td-num">$77.9K</td></tr>
+              <tr><td>40–50</td><td>Married</td><td class="td-num">36</td><td class="td-num">14</td><td class="td-num">$0</td><td class="td-num">$1.7K</td><td class="td-num">$57K</td></tr>
+              <tr><td>50–60</td><td>Married</td><td class="td-num">28</td><td class="td-num">18</td><td class="td-num">$1.9K</td><td class="td-num">$45.9K</td><td class="td-num">$281K</td></tr>
+              <tr><td>50–60</td><td>Single</td><td class="td-num">2</td><td class="td-num">1</td><td class="td-num">$423K</td><td class="td-num">$634K</td><td class="td-num">$761K</td></tr>
+              <tr><td>60+</td><td>Married</td><td class="td-num">10</td><td class="td-num">7</td><td class="td-num">$5K</td><td class="td-num">$5.8K</td><td class="td-num">$54.6K</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Apex customers — AUM distribution</div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Age</th><th>Status</th><th style="text-align:right;">Total</th><th style="text-align:right;">Funded</th><th style="text-align:right;">P50 AUM</th><th style="text-align:right;">P75 AUM</th><th style="text-align:right;">P90 AUM</th></tr></thead>
+            <tbody>
+              <tr><td>18–25</td><td>Single</td><td class="td-num">2</td><td class="td-num">2</td><td class="td-num">$121K</td><td class="td-num">$174K</td><td class="td-num">$205K</td></tr>
+              <tr><td>25–30</td><td>Married</td><td class="td-num">1</td><td class="td-num">1</td><td class="td-num">$42K</td><td class="td-num">$42K</td><td class="td-num">$42K</td></tr>
+              <tr><td>30–40</td><td>Married</td><td class="td-num">2</td><td class="td-num">1</td><td class="td-num">$133K</td><td class="td-num">$199K</td><td class="td-num">$239K</td></tr>
+              <tr><td>40–50</td><td>Married</td><td class="td-num">5</td><td class="td-num">3</td><td class="td-num">$6.9K</td><td class="td-num">$56.2K</td><td class="td-num">$64K</td></tr>
+              <tr><td>50–60</td><td>Married</td><td class="td-num">9</td><td class="td-num">7</td><td class="td-num">$106K</td><td class="td-num">$266K</td><td class="td-num">$502K</td></tr>
+              <tr><td>50–60</td><td>Single</td><td class="td-num">1</td><td class="td-num">1</td><td class="td-num">$845K</td><td class="td-num">$845K</td><td class="td-num">$845K</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-insight">Apex customers aged 50–60 hold a median AUM of <span>$106K</span>, with top accounts exceeding $800K</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+const chartDefaults = {
+  color: 'rgba(255,255,255,0.55)',
+  borderColor: 'rgba(255,255,255,0.08)',
+};
+Chart.defaults.color = 'rgba(255,255,255,0.55)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+
+new Chart(document.getElementById('depositingChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26'],
+    datasets: [{ data: [3,10,5,10,12,12,23,41,62,163,266,1014], backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 3 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { font: { size: 11 } } }, x: { grid: { display: false }, ticks: { font: { size: 11 }, autoSkip: false } } } }
+});
+
+new Chart(document.getElementById('depositFreqChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['1×','2×','3×','4+×'],
+    datasets: [{ data: [56.48,23.68,9.04,10.8], backgroundColor: ['rgba(255,255,255,0.9)','rgba(255,255,255,0.65)','rgba(255,255,255,0.4)','rgba(255,255,255,0.2)'], borderWidth: 0 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '65%' }
+});
+
+const depFreqData = [['1 deposit',56.48],['2 deposits',23.68],['3 deposits',9.04],['4+ deposits',10.8]];
+const barsEl = document.getElementById('depFreqBars');
+barsEl.innerHTML = depFreqData.map(([label,pct]) => `
+  <div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:4px;"><span>${label}</span><span>${pct}%</span></div>
+    <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;"><div style="width:${pct}%;height:100%;background:rgba(255,255,255,0.7);border-radius:2px;"></div></div>
+  </div>`).join('');
+
+new Chart(document.getElementById('investedChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Nov 24','Dec 24','Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26'],
+    datasets: [
+      { label: 'Invested capital', data: [2588672,2715948,3095605,3201558,3610335,3798573,4464591,4582547,4576254,2564155,3119077,3051224,3084347,3307742,4953419,5628995,6923389,8432839,14520295], backgroundColor: 'rgba(255,255,255,0.8)', borderRadius: 2, yAxisID: 'y' },
+      { label: 'Active investors', data: [21,22,29,30,40,40,41,42,47,50,57,63,66,78,276,319,234,394,1060], type: 'line', borderColor: '#4ade80', backgroundColor: 'transparent', pointRadius: 3, pointBackgroundColor: '#4ade80', yAxisID: 'y1', tension: 0.3 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => '$'+(v/1000000).toFixed(1)+'M', font: { size: 11 } } }, y1: { position: 'right', grid: { display: false }, ticks: { font: { size: 11 } } }, x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } } } }
+});
+
+new Chart(document.getElementById('decileChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Top 10%','10–20%','20–30%','30–40%','40–50%','50–60%','60–70%','70–80%','80–90%','Bottom 10%'],
+    datasets: [{ data: [83.05,7.8,3.98,2.36,1.29,0.71,0.45,0.22,0.09,0.05], backgroundColor: ctx => ctx.dataIndex === 0 ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.35)', borderRadius: 3 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => v+'%', font: { size: 11 } } }, x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45, autoSkip: false } } } }
+});
+
+new Chart(document.getElementById('icpChart'), {
+  type: 'bar',
+  data: {
+    labels: ['General retail\n(1,217 accounts)','HNI\n(16 accounts)','RSU\n(83 accounts)','Returning Indian\n(13 accounts)'],
+    datasets: [{ data: [8837611,8680755,3929269,838410], backgroundColor: ['rgba(255,255,255,0.5)','rgba(255,255,255,0.9)','rgba(255,255,255,0.65)','rgba(255,255,255,0.35)'], borderRadius: 3 }]
+  },
+  options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => '$'+(v/1000000).toFixed(1)+'M', font: { size: 11 } } }, y: { grid: { display: false }, ticks: { font: { size: 11 } } } } }
+});
+
+function retColor(val, isValue) {
+  if (val === null || val === undefined || val === '—') return 'c-na';
+  const n = parseInt(val);
+  if (isNaN(n)) return 'c-na';
+  if (isValue) {
+    if (n >= 150) return 'c-above';
+    if (n >= 100) return 'c-green';
+    if (n >= 70) return 'c-amber';
+    return 'c-red';
+  }
+  if (n === 0) return 'c-red';
+  if (n < 70) return 'c-amber';
+  if (n <= 100) return 'c-green';
+  return 'c-above';
+}
+
+function buildTable(id, rows, isValue) {
+  const el = document.getElementById(id);
+  const cols = isValue ? ['Cohort','Baseline AUM','M0','M1','M2','M3','M4','M5','M6'] : ['Cohort','Cohort size','M0','M1','M2','M3','M4','M5','M6'];
+  el.innerHTML = '<thead><tr>' + cols.map(c => '<th>' + c + '</th>').join('') + '</tr></thead><tbody>' +
+    rows.map(row => '<tr>' + row.map((cell, i) => {
+      if (i >= 2) {
+        const cls = retColor(cell, isValue);
+        const display = (cell === null || cell === undefined || cell === '—') ? '—' : cell + '%';
+        return `<td class="td-num ${cls}" style="text-align:right;">${display}</td>`;
+      }
+      return `<td>${cell ?? '—'}</td>`;
+    }).join('') + '</tr>').join('') + '</tbody>';
+}
+
+buildTable('logoTable', [
+  ['Nov 2024',1,100,100,100,100,100,100,100],
+  ['Jan 2025',8,100,100,100,100,100,100,88],
+  ['Mar 2025',10,100,90,100,100,100,100,100],
+  ['Jul 2025',6,100,100,100,100,100,100,50],
+  ['Aug 2025',4,100,100,100,100,100,50,100],
+  ['Sep 2025',6,100,100,100,100,83,100,100],
+  ['Oct 2025',7,100,100,86,86,86,86,86],
+  ['Nov 2025',4,100,100,50,100,100,100,100],
+  ['Dec 2025',13,100,92,92,92,92,92,'—'],
+  ['Jan 2026',21,100,100,100,100,100,'—','—'],
+  ['Feb 2026',46,100,98,93,98,'—','—','—'],
+  ['Mar 2026',87,100,97,98,'—','—','—','—'],
+  ['Apr 2026',157,100,98,'—','—','—','—','—'],
+], false);
+
+buildTable('valueTable', [
+  ['Dec 2024','$4.8K',100,114,114,114,114,149,174],
+  ['Jan 2025','$6.2M',100,104,109,116,135,166,166],
+  ['Feb 2025','$47K',100,138,189,230,283,301,301],
+  ['Mar 2025','$3.6M',100,104,109,120,123,128,135],
+  ['Jul 2025','$492K',100,115,127,136,139,139,139],
+  ['Aug 2025','$306K',100,149,203,203,264,264,264],
+  ['Sep 2025','$2.6M',100,104,106,108,111,118,127],
+  ['Oct 2025','$192K',100,168,207,360,370,464,520],
+  ['Nov 2025','$175K',100,102,142,162,162,166,173],
+  ['Dec 2025','$445K',100,543,554,559,571,619,'—'],
+  ['Jan 2026','$4.9M',100,139,180,212,252,'—','—'],
+  ['Feb 2026','$1.1M',100,133,164,305,'—','—','—'],
+  ['Mar 2026','$1.9M',100,156,207,'—','—','—','—'],
+  ['Apr 2026','$2.9M',100,171,'—','—','—','—','—'],
+], true);
+
+buildTable('txnTable', [
+  ['Dec 2024',2,100,50,0,50,0,50,50],
+  ['Jan 2025',9,100,44,22,33,0,44,44],
+  ['Feb 2025',2,100,100,100,50,100,100,100],
+  ['Mar 2025',5,100,80,60,60,60,80,60],
+  ['Apr 2025',6,100,50,67,67,67,50,67],
+  ['Jul 2025',10,100,50,50,40,40,50,40],
+  ['Sep 2025',6,100,83,67,83,67,67,67],
+  ['Oct 2025',7,100,86,100,86,29,86,57],
+  ['Nov 2025',8,100,63,50,25,50,38,63],
+  ['Dec 2025',13,100,77,54,69,54,69,'—'],
+  ['Jan 2026',25,100,76,80,56,76,'—','—'],
+  ['Feb 2026',51,100,80,63,65,'—','—','—'],
+  ['Mar 2026',121,100,81,62,'—','—','—','—'],
+  ['Apr 2026',181,100,72,'—','—','—','—','—'],
+], false);
+
+const funnelData = [
+  ['Account created', 5803],
+  ['Onboarding KYC', 5483],
+  ['KYC completed', 4041],
+  ['Onboarding completed', 3814],
+  ['In review', 3679],
+  ['Broker account created', 3307],
+  ['Deposited', 1302],
+];
+document.getElementById('funnelViz').innerHTML = funnelData.map(([label, n]) => {
+  const pct = (n / 5803 * 100).toFixed(1);
+  return `<div class="funnel-row">
+    <div class="funnel-label">${label}</div>
+    <div class="funnel-track"><div class="funnel-fill" style="width:${pct}%;">${n.toLocaleString()}</div></div>
+    <div class="funnel-n">${pct}%</div>
+  </div>`;
+}).join('');
+</script>
+</body>
+</html>
